@@ -1,0 +1,1 @@
+FROM opensips/opensips-cp:latest
