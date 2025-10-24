@@ -3,97 +3,54 @@ timeout: 60
 
 tasks:
   - name: Register caller
-    type: uac-sipp
-    username: {{ caller }}
-    password: "{{ caller_password }}"
-    config_file: scripts/sipp-register.xml
-    ip: {{ caller_ip }}
-    port: {{ caller_port }}
+    use: register_caller
 
   - name: Register callee
-    type: uac-sipp
-    username: {{ callee }}
-    password: "{{ callee_password }}"
-    config_file: scripts/sipp-register.xml
-    ip: {{ callee_ip }}
-    port: {{ callee_port }}
+    use: register_callee
 
   - name: Set Callee DND
-    type: uac-sipp
-    username: {{ callee }}
-    password: "{{ callee_password }}"
-    config_file: scripts/dnd_on.xml
-    ip: {{ callee_ip }}
-    port: {{ callee_port }}
+    use: set_dnd_on
     require:
       after:
         task: Register callee
 
   - name: Check DND ACL
-    type: mysql-client
-    script: scripts/check_dnd_on.sh
-    args: {{ callee }} {{ default_domain }}
+    use: check_callee_dnd_on
     require:
       after:
         task: Set Callee DND
   
   - name: Caller BUSY
-    type: uac-sipp
-    username: {{ caller }}
-    password: "{{ caller_password }}"
+    use: caller_uac
     config_file: scripts/caller_busy.xml
-    ip: {{ caller_ip }}
-    port: {{ caller_port }}
     require:
       after:
         task: Check DND ACL
 
   - name: Reset Callee DND
-    type: uac-sipp
-    username: {{ callee }}
-    password: "{{ callee_password }}"
-    config_file: scripts/dnd_off.xml
-    ip: {{ callee_ip }}
-    port: {{ callee_port }}
+    use: set_dnd_off
     require:
       after:
         task: Caller BUSY
 
   - name: Check DND OFF ACL
-    type: mysql-client
-    script: scripts/check_dnd_off.sh
-    args: {{ callee }} {{ default_domain }}
+    use: check_callee_dnd_off
     require:
       after:
         task: Reset Callee DND
   
   - name: Caller UAC
-    type: uac-sipp
-    username: {{ caller }}
-    password: "{{ caller_password }}"
-    config_file: scripts/caller.xml
-    ip: {{ caller_ip }}
-    port: {{ caller_port }}
+    use: caller_uac
     require:
       after:
         task: Check DND OFF ACL
   
   - name: Callee UAS
-    type: uas-sipp
-    username: {{ callee }}
-    password: "{{ callee_password }}"
-    config_file: scripts/callee.xml
-    ip: {{ callee_ip }}
-    port: {{ callee_port }}
+    use: callee_uas
     require:
       after:
         task: Check DND OFF ACL
 
 cleanup_tasks:
-  - name: Delete caller AOR
-    type: opensips-mi
-    args: ul_rm location {{ caller }}@{{ default_domain }}
-
-  - name: Delete callee AOR
-    type: opensips-mi
-    args: ul_rm location {{ callee }}@{{ default_domain }}
+  - use: delete_caller_aor
+  - use: delete_callee_aor

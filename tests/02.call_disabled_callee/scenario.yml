@@ -3,48 +3,26 @@ timeout: 120
 
 tasks:
   - name: Register caller
-    type: uac-sipp
-    username: {{ caller }}
-    password: "{{ caller_password }}"
-    config_file: scripts/sipp-register.xml
-    ip: {{ caller_ip }}
-    port: {{ caller_port }}
+    use: register_caller
 
   - name: Register callee
-    type: uac-sipp
-    username: {{ callee }}
-    password: "{{ callee_password }}"
-    config_file: scripts/sipp-register.xml
-    ip: {{ callee_ip }}
-    port: {{ callee_port }}
+    use: register_callee
   
   - name: Disable ACL callee
-    type: mysql-client
-    script: scripts/disable_user.sh
-    args: {{ callee }} {{ default_domain }}
+    use: disable_callee
     require:
       after:
         task: Register callee
         wait: 1
 
   - name: Caller UAC
-    type: uac-sipp
-    username: {{ caller }}
-    password: "{{ caller_password }}"
-    config_file: scripts/caller.xml
-    ip: {{ caller_ip }}
-    port: {{ caller_port }}
+    use: caller_uac
     require:
       - after:
           task: Disable ACL callee
   
-  - name: Callee UAC
-    type: uas-sipp
-    username: {{ callee }}
-    password: "{{ callee_password }}"
-    config_file: scripts/callee.xml
-    ip: {{ callee_ip }}
-    port: {{ callee_port }}
+  - name: Callee UAS
+    use: callee_uas
     require:
       - after:
           task: Disable ACL callee
@@ -52,31 +30,20 @@ tasks:
           task: Caller UAC
   
   - name: Fail caller UAC
-    type: uac-sipp
-    username: {{ caller }}
-    password: "{{ caller_password }}"
+    use: caller_uac
     config_file: scripts/caller-fail.xml
-    ip: {{ caller_ip }}
-    port: {{ caller_port }}
     require:
       - after:
           task: Register callee
           wait: 70
   
   - name: Enable ACL callee
-    type: mysql-client
-    script: scripts/enable_user.sh
-    args: {{ callee }} {{ default_domain }}
+    use: enable_callee
     require:
       after:
         task: Fail caller UAC
         wait: 1
 
 cleanup_tasks:
-  - name: Delete caller AOR
-    type: opensips-mi
-    args: ul_rm location {{ caller }}@{{ default_domain }}
-
-  - name: Delete callee AOR
-    type: opensips-mi
-    args: ul_rm location {{ callee }}@{{ default_domain }}
+  - use: delete_caller_aor
+  - use: delete_callee_aor

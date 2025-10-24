@@ -3,31 +3,17 @@ timeout: 30
 
 tasks:
   - name: Register callee
-    type: uac-sipp
-    username: {{ callee }}
-    password: "{{ callee_password }}"
-    config_file: scripts/sipp-register.xml
-    ip: {{ callee_ip }}
-    port: {{ callee_port }}
+    use: register_callee
 
-  - name: Callee UAC
-    type: uas-sipp
-    config_file: scripts/callee.xml
-    ip: {{ callee_ip }}
-    port: {{ callee_port }}
-    require: Register callee
+  - name: Callee UAS
+    use: callee_uas
 
   - name: Gateway UAC
-    type: uac-sipp
-    config_file: scripts/gateway.xml
-    ip: {{ gateway1_ip }}
-    port: {{ gateway1_port }}
+    use: gateway_uac
     keys:
       callee_did: {{ callee_did }}
     require:
-      started: Callee UAC
+      started: Callee UAS
 
 cleanup_tasks:
-  - name: Delete callee AOR
-    type: opensips-mi
-    args: ul_rm location {{ callee }}@{{ default_domain }}
+  - use: delete_callee_aor

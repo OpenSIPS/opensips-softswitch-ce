@@ -3,9 +3,6 @@ timeout: 40
 
 tasks:
   - name: Caller UAC
-    type: uac-sipp
-    config_file: scripts/caller.xml
-    ip: {{ caller_ip }}
-    port: {{ caller_port }}
+    use: caller_uac
     keys:
       unknown_domain: domain.unknown

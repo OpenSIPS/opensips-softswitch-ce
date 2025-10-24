@@ -3,12 +3,7 @@ timeout: 40
 
 tasks:
   - name: Register caller
-    type: uac-sipp
-    username: {{ caller }}
-    password: "{{ caller_password }}"
-    config_file: scripts/sipp-register.xml
-    ip: {{ caller_ip }}
-    port: {{ caller_port }}
+    use: register_caller
 
   - name: Check callee not registered
     type: opensips-mi
@@ -16,17 +11,10 @@ tasks:
     args: {{ callee }}
 
   - name: Caller UAC
-    type: uac-sipp
-    username: {{ caller }}
-    password: "{{ caller_password }}"
-    config_file: scripts/caller.xml
-    ip: {{ caller_ip }}
-    port: {{ caller_port }}
+    use: caller_uac
     require:
       - after:
           task: Check callee not registered
 
 cleanup_tasks:
-  - name: Delete caller AOR
-    type: opensips-mi
-    args: ul_rm location {{ caller }}@{{ default_domain }}
+  - use: delete_caller_aor

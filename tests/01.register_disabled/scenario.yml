@@ -2,58 +2,30 @@
 timeout: 30
 
 init_tasks:
-  - name: Disable ACL caller
-    type: mysql-client
-    script: scripts/disable_user.sh
-    args: {{ caller }} {{ default_domain }}
-
-  - name: Disable ACL callee
-    type: mysql-client
-    script: scripts/disable_user.sh
-    args: {{ callee }} {{ default_domain }}
+  - use: disable_caller
+  - use: disable_callee
 
 tasks:
   - name: Register caller
-    type: uac-sipp
-    username: {{ caller }}
-    password: "{{ caller_password }}"
-    config_file: scripts/sipp-register.xml
-    ip: {{ caller_ip }}
-    port: {{ caller_port }}
+    use: register_caller
 
   - name: Register callee
-    type: uac-sipp
-    username: {{ callee }}
-    password: "{{ callee_password }}"
-    config_file: scripts/sipp-register.xml
-    ip: {{ callee_ip }}
-    port: {{ callee_port }}
+    use: register_callee
 
   - name: MI check Not Registered caller
-    type: opensips-mi
-    script: scripts/check-register.py
-    args: {{ caller }}
+    use: check_caller_register
     require:
       after:
         task: Register caller
         wait: 1
 
   - name: MI check Not Registered callee
-    type: opensips-mi
-    script: scripts/check-register.py
-    args: {{ callee }}
+    use: check_callee_register
     require:
       after:
         task: Register callee
         wait: 1
 
 cleanup_tasks:
-  - name: Enable ACL caller
-    type: mysql-client
-    script: scripts/enable_user.sh
-    args: {{ caller }} {{ default_domain }}
-
-  - name: Enable ACL callee
-    type: mysql-client
-    script: scripts/enable_user.sh
-    args: {{ callee }} {{ default_domain }}
+  - use: enable_caller
+  - use: enable_callee

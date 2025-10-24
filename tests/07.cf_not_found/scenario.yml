@@ -3,98 +3,53 @@ timeout: 60
 
 init_tasks:
   - name: Add CF Not Found URI for callee
-    type: mysql-client
-    script: scripts/add_cf_uri.sh
-    args: {{ callee }} {{ default_domain }} sip:{{ cf_user }}@{{ default_domain }}
+    use: add_cf_uri
 
 tasks:
   - name: Register caller
-    type: uac-sipp
-    username: {{ caller }}
-    password: "{{ caller_password }}"
-    config_file: scripts/sipp-register.xml
-    ip: {{ caller_ip }}
-    port: {{ caller_port }}
+    use: register_caller
 
   - name: Register call forward user
-    type: uac-sipp
-    username: {{ cf_user }}
-    password: "{{ cf_pass }}"
-    config_file: scripts/sipp-register.xml
-    ip: {{ cf_ip }}
-    port: {{ cf_port }}
+    use: register_cf_user
 
   - name: Caller UAC
-    type: uac-sipp
-    username: {{ caller }}
-    password: "{{ caller_password }}"
-    config_file: scripts/caller.xml
-    ip: {{ caller_ip }}
-    port: {{ caller_port }}
+    use: caller_uac
     keys:
       task_tag: nocallee
     require:
       after: Register caller
       after: Register call forward user
   
-  - name: CF User UAC
-    type: uas-sipp
-    username: {{ cf_user }}
-    password: "{{ cf_pass }}"
+  - name: CF User UAS
+    use: cf_user_uas
     config_file: scripts/responder.xml
-    ip: {{ cf_ip }}
-    port: {{ cf_port }}
     require:
       after: Register caller
       after: Register call forward user
   
   - name: Register Callee
-    type: uac-sipp
-    username: {{ callee }}
-    password: "{{ callee_password }}"
-    config_file: scripts/sipp-register.xml
-    ip: {{ callee_ip }}
-    port: {{ callee_port }}
+    use: register_callee
     require:
       after: Caller UAC
-      after: CF User UAC
+      after: CF User UAS
   
   - name: Caller UAC 2
-    type: uac-sipp
-    username: {{ caller }}
-    password: "{{ caller_password }}"
-    config_file: scripts/caller.xml
-    ip: {{ caller_ip }}
-    port: {{ caller_port }}
+    use: caller_uac
     keys:
       task_tag: withcallee
     require:
       after: Register Callee
   
-  - name: Callee UAC 2
-    type: uas-sipp
-    username: {{ callee }}
-    password: "{{ callee_password }}"
+  - name: Callee UAS 2
+    use: callee_uas
     config_file: scripts/responder.xml
-    ip: {{ callee_ip }}
-    port: {{ callee_port }}
     require:
       after: Register Callee
 
 cleanup_tasks:
-  - name: Delete caller AOR
-    type: opensips-mi
-    args: ul_rm location {{ caller }}@{{ default_domain }}
-
-  - name: Delete callee AOR
-    type: opensips-mi
-    args: ul_rm location {{ callee }}@{{ default_domain }}
-  
-  - name: Delete call forward user AOR
-    type: opensips-mi
-    args: ul_rm location {{ cf_user }}@{{ default_domain }}
+  - use: delete_caller_aor
+  - use: delete_callee_aor
+  - use: delete_cf_user_aor
 
   - name: Remove CF Not Found URI for callee
-    type: mysql-client
-    script: scripts/remove_cf_uri.sh
-    args: {{ callee }} {{ default_domain }}
+    use: remove_cf_uri
