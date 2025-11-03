@@ -41,6 +41,7 @@ jobs:
           echo "The following containers are not running properly:"
           echo "$BAD_CONTAINERS"
           docker ps -a
+          docker logs rtpproxy
           exit 1
         fi
         echo "All containers are running."
