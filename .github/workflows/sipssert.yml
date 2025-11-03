@@ -34,14 +34,12 @@ jobs:
 
     - name: Ensure All Containers Are Running
       run: |
-        sleep 15s
         echo "Checking container statuses..."
         BAD_CONTAINERS=$(docker ps -a --filter "status=exited" --filter "status=dead" --filter "status=restarting" --format '{{.Names}}')
         if [ -n "$BAD_CONTAINERS" ]; then
           echo "The following containers are not running properly:"
           echo "$BAD_CONTAINERS"
           docker ps -a
-          docker logs rtpproxy
           exit 1
         fi
         echo "All containers are running."
