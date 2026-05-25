@@ -21,7 +21,7 @@ services:
         ipv4_address: ${MYSQL_IP}
 
   opensips:
-    image: opensips/opensips:softswitch-ce
+    image: ghcr.io/opensips/opensips-sbc-ce-config/opensips:softswitch-ce
     container_name: opensips
     volumes:
       - ./etc/opensips:/etc/opensips
@@ -76,7 +76,7 @@ services:
     command: -s udp:${RTPPROXY_IP}:${RTPPROXY_PORT} -l ${RTPPROXY_IP} -m ${MINPORT} -M ${MAXPORT} -A ${HOST_IP}
 
   freeswitch:
-    image: opensips/freeswitch-ce
+    image: ghcr.io/opensips/freeswitch-ce
     container_name: freeswitch
     env_file:
       - .env
