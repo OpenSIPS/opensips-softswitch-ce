@@ -57,3 +57,16 @@ jobs:
         directory: tests
         tests: .
 
+    - name: Collect Container Logs
+      if: always()
+      run: |
+        mkdir -p /tmp/container-logs
+        docker compose logs --no-color > /tmp/container-logs/all-services.log 2>&1
+        docker ps -a > /tmp/container-logs/docker-ps.txt 2>&1
+
+    - name: Upload Container Logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: container-logs
+        path: /tmp/container-logs/
