@@ -1,1 +1,1 @@
-FROM opensips/opensips-cp:latest
+FROM ghcr.io/opensips/opensips-cp:latest
