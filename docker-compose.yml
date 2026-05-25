@@ -21,7 +21,7 @@ services:
         ipv4_address: ${MYSQL_IP}
 
   opensips:
-    image: ghcr.io/opensips/opensips-sbc-ce-config/opensips:softswitch-ce
+    image: ghcr.io/opensips/opensips-softswitch-ce-config/opensips:softswitch-ce
     container_name: opensips
     volumes:
       - ./etc/opensips:/etc/opensips
