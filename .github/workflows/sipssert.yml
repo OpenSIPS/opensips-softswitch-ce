@@ -4,6 +4,7 @@ name: Run SIPSsert tests
 on:
   push:
   pull_request:
+  workflow_dispatch:
   schedule:
     - cron: '0 2 * * Mon'
 
