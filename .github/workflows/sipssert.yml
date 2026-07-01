@@ -16,7 +16,7 @@ jobs:
     steps:
 
     - name: Checkout Repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         submodules: recursive
 
@@ -31,7 +31,7 @@ jobs:
       shell: bash
 
     - name: Setup Docker Compose
-      uses: hoverkraft-tech/compose-action@v2.0.2
+      uses: hoverkraft-tech/compose-action@v3.0.0
 
     - name: Ensure All Containers Are Running
       run: |
@@ -66,7 +66,7 @@ jobs:
 
     - name: Upload Container Logs
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: container-logs
         path: /tmp/container-logs/
